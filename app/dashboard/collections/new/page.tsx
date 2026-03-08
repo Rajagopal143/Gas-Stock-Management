@@ -6,20 +6,24 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, User, IndianRupee, Wallet } from "lucide-react";
+import { ArrowLeft, Save, User, IndianRupee, Wallet, AlertCircle } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export default function NewCollectionPage() {
   const qc = useQueryClient();
   const router = useRouter();
-  const { register, handleSubmit, formState: { isSubmitting } } = useForm();
+  const { register, handleSubmit, watch, formState: { isSubmitting } } = useForm();
   
   const { data: customers = [] } = useQuery({ 
     queryKey: ["customers"], 
     queryFn: () => fetch("/api/customers").then((r) => r.json()) 
   });
+
+  const selectedCustomerId = watch("customerId");
+  const selectedCustomer = customers.find((c: any) => c._id === selectedCustomerId);
 
   const submit = handleSubmit(async (v: any) => {
     try {
@@ -38,6 +42,7 @@ export default function NewCollectionPage() {
       qc.invalidateQueries({ queryKey: ["collections"] });
       qc.invalidateQueries({ queryKey: ["summary"] });
       qc.invalidateQueries({ queryKey: ["profit"] });
+      qc.invalidateQueries({ queryKey: ["customers"] });
       router.push("/dashboard/collections");
     } catch {
       toast.error("Error recording payment");
@@ -74,6 +79,19 @@ export default function NewCollectionPage() {
                   <option key={c._id} value={c._id}>{c.name} ({c.shopName || "Personal"})</option>
                 ))}
               </NativeSelect>
+
+              {selectedCustomer && (
+                <div className={cn(
+                  "mt-2 p-3 rounded-xl flex items-center justify-between border",
+                  selectedCustomer.balance > 0 ? "bg-rose-50 border-rose-100 text-rose-700" : "bg-emerald-50 border-emerald-100 text-emerald-700"
+                )}>
+                  <div className="flex items-center gap-2">
+                    <AlertCircle className="size-4" />
+                    <span className="text-xs font-bold uppercase tracking-wider">Current Outstanding</span>
+                  </div>
+                  <span className="text-lg font-black tracking-tight">₹{selectedCustomer.balance.toLocaleString()}</span>
+                </div>
+              )}
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -112,7 +130,7 @@ export default function NewCollectionPage() {
       <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-4 text-sm text-blue-700">
          <p className="flex gap-2">
            <span className="font-bold underline">Tip:</span> 
-           Recording collections daily helps in tracking customer outstanding balances and accurate cash-in-hand reports.
+          Recording collections daily helps in tracking customer outstanding and accurate cash-in-hand reports.
          </p>
       </div>
     </div>

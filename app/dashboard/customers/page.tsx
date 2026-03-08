@@ -78,7 +78,7 @@ export default function CustomersPage() {
                         <span className="font-black text-lg">{c.name.charAt(0)}</span>
                       </div>
                       <div className="text-right">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">Balance</p>
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-0.5">Outstanding</p>
                         <p className={cn(
                           "text-lg font-black tracking-tighter",
                           c.balance > 0 ? "text-rose-500" : "text-emerald-500"

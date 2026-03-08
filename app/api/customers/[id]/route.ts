@@ -4,13 +4,17 @@ import Customer from "@/models/Customer";
 import Delivery from "@/models/Delivery";
 import Collection from "@/models/Collection";
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(
+  _: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
+    const { id } = await params
     await connectDB();
     const [customer, deliveries, collections] = await Promise.all([
-      Customer.findById(params.id),
-      Delivery.find({ customerId: params.id }).sort({ deliveryDate: -1 }),
-      Collection.find({ customerId: params.id }).sort({ paymentDate: -1 })
+      Customer.findById(id),
+      Delivery.find({ customerId: id }).sort({ deliveryDate: -1 }),
+      Collection.find({ customerId: id }).sort({ paymentDate: -1 })
     ]);
 
     if (!customer) {
@@ -19,7 +23,6 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
 
     const totalSales = deliveries.reduce((sum, d) => sum + (d.quantity * d.pricePerCylinder), 0);
     const totalPaid = collections.reduce((sum, c) => sum + c.amount, 0);
-    const balance = totalSales - totalPaid;
 
     return NextResponse.json({ 
       customer, 
@@ -27,7 +30,7 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
       collections,
       totalSales, 
       totalPaid,
-      balance,
+      balance: customer.outstandingAmount || 0,
       lastActivityDate: deliveries[0]?.deliveryDate || collections[0]?.paymentDate || null 
     });
   } catch {
@@ -35,24 +38,26 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
   }
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     await connectDB();
     const body = await req.json();
-    const customer = await Customer.findByIdAndUpdate(params.id, body, { new: true });
+    const customer = await Customer.findByIdAndUpdate(id, body, { new: true });
     return NextResponse.json(customer);
   } catch {
     return NextResponse.json({ error: "Failed to update customer" }, { status: 500 });
   }
 }
 
-export async function DELETE(_: Request, { params }: { params: { id: string } }) {
+export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     await connectDB();
     // In a real app, you might want to check for existing deliveries/collections 
     // before allowing delete, or delete them along with the customer.
     // For now, we'll just delete the customer.
-    await Customer.findByIdAndDelete(params.id);
+    await Customer.findByIdAndDelete(id);
     return NextResponse.json({ message: "Customer deleted successfully" });
   } catch {
     return NextResponse.json({ error: "Failed to delete customer" }, { status: 500 });

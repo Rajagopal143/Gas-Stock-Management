@@ -1,5 +1,3 @@
-export type CylinderType = "14.2kg Domestic" | "19kg Commercial";
-
 export interface Customer {
   _id: string;
   name: string;
@@ -12,7 +10,6 @@ export interface Customer {
 
 export interface Inventory {
   _id: string;
-  cylinderType: CylinderType;
   quantity: number;
   purchasePrice: number;
   sellingPrice: number;

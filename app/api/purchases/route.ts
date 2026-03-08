@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   const totalCost = payload.quantity * payload.pricePerCylinder;
   const record = await PurchaseOrder.create({ ...payload, totalCost, purchaseDate: payload.purchaseDate || new Date() });
   await Inventory.findOneAndUpdate(
-    { cylinderType: payload.cylinderType },
+    {},
     { $inc: { quantity: payload.quantity }, $set: { purchasePrice: payload.pricePerCylinder } },
     { upsert: true, new: true }
   );

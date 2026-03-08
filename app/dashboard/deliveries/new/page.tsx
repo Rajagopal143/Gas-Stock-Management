@@ -6,20 +6,47 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Truck, Save, User, Package, IndianRupee } from "lucide-react";
+import { ArrowLeft, Truck, Save, User, Tag, Calculator } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
 import { toast } from "sonner";
+import { useEffect } from "react";
 
 export default function NewDeliveryPage() {
   const qc = useQueryClient();
   const router = useRouter();
-  const { register, handleSubmit, formState: { isSubmitting } } = useForm();
+  const { register, handleSubmit, watch, setValue, formState: { isSubmitting } } = useForm({
+    defaultValues: {
+      customerId: "",
+      quantity: 1,
+      pricePerCylinder: 0,
+      discountPerCylinder: 0,
+      notes: ""
+    }
+  });
   
   const { data: customers = [] } = useQuery({ 
     queryKey: ["customers"], 
     queryFn: () => fetch("/api/customers").then((r) => r.json()) 
   });
+
+  const { data: inventory = [] } = useQuery({
+    queryKey: ["inventory"],
+    queryFn: () => fetch("/api/inventory").then((r) => r.json())
+  });
+
+  const quantity = watch("quantity");
+  const price = watch("pricePerCylinder");
+  const discount = watch("discountPerCylinder");
+
+  useEffect(() => {
+    if (inventory.length > 0 && !price) {
+      setValue("pricePerCylinder", inventory[0].sellingPrice);
+    }
+  }, [inventory, price, setValue]);
+
+  const netPrice = Math.max(0, price - (discount || 0));
+  const totalAmount = netPrice * (quantity || 0);
 
   const submit = handleSubmit(async (v: any) => {
     try {
@@ -29,7 +56,8 @@ export default function NewDeliveryPage() {
         body: JSON.stringify({ 
           ...v, 
           quantity: Number(v.quantity), 
-          pricePerCylinder: Number(v.pricePerCylinder) 
+          pricePerCylinder: Number(v.pricePerCylinder),
+          discountPerCylinder: Number(v.discountPerCylinder || 0)
         }) 
       });
       
@@ -38,6 +66,7 @@ export default function NewDeliveryPage() {
       toast.success("Delivery created successfully");
       qc.invalidateQueries({ queryKey: ["deliveries"] });
       qc.invalidateQueries({ queryKey: ["inventory"] });
+      qc.invalidateQueries({ queryKey: ["summary"] });
       router.push("/dashboard/deliveries");
     } catch {
       toast.error("Error creating delivery");
@@ -76,30 +105,37 @@ export default function NewDeliveryPage() {
               </NativeSelect>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="type" className="flex items-center gap-1.5"><Package className="size-3" /> Cylinder Type</Label>
-                <NativeSelect id="type" {...register("cylinderType", { required: true })} className="bg-background/50">
-                  <option value="14.2kg Domestic">14.2kg Domestic</option>
-                  <option value="19kg Commercial">19kg Commercial</option>
-                  <option value="5kg Mini">5kg Mini</option>
-                </NativeSelect>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="quantity">Quantity</Label>
-                <Input id="quantity" type="number" placeholder="0" {...register("quantity", { required: true })} className="bg-background/50" />
-              </div>
+            <div className="grid gap-2">
+              <Label htmlFor="quantity">Quantity (19kg cylinders)</Label>
+              <Input id="quantity" type="number" placeholder="0" {...register("quantity", { required: true })} className="bg-background/50" />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="price" className="flex items-center gap-1.5"><IndianRupee className="size-3" /> Price Per Cylinder</Label>
+                <Label htmlFor="price" className="flex items-center gap-1.5"><Tag className="size-3" /> Rate (Fixed Price)</Label>
                 <Input id="price" type="number" placeholder="0.00" {...register("pricePerCylinder", { required: true })} className="bg-background/50" />
+                <p className="text-[10px] text-muted-foreground italic pl-1">Selling price from inventory.</p>
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="notes">Notes</Label>
-                <Input id="notes" placeholder="Any specific instructions..." {...register("notes")} className="bg-background/50" />
+                <Label htmlFor="discount" className="flex items-center gap-1.5"><Calculator className="size-3" /> Discount per Cylinder</Label>
+                <Input id="discount" type="number" placeholder="0.00" {...register("discountPerCylinder")} className="bg-background/50 text-rose-500 font-bold" />
               </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 space-y-2">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-muted-foreground">Net Rate Selection:</span>
+                <span className="font-bold">₹{netPrice.toLocaleString()} / cyl</span>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t border-dashed border-primary/20">
+                <span className="font-medium">Total Billable Amount:</span>
+                <span className="text-xl font-black text-primary">₹{totalAmount.toLocaleString()}</span>
+              </div>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="notes">Notes</Label>
+              <Input id="notes" placeholder="Any specific instructions..." {...register("notes")} className="bg-background/50" />
             </div>
 
             <div className="flex justify-end gap-3 pt-4">

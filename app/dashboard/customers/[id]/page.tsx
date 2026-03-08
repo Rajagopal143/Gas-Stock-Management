@@ -66,6 +66,8 @@ export default function CustomerDetailsPage() {
 
   const { customer, deliveries, collections, totalSales, totalPaid, balance } = data;
 
+  const totalCylindersBought = deliveries.reduce((acc: number, d: any) => acc + d.quantity, 0);
+
   return (
     <div className="space-y-6 pb-12 overflow-hidden">
       {/* Header */}
@@ -136,6 +138,23 @@ export default function CustomerDetailsPage() {
                 <p className="text-xs text-muted-foreground">{customer.address}</p>
               </div>
             </div>
+            {customer.outstandingAmount > 0 && (
+              <div className="flex items-center gap-3 pt-2 border-t border-dashed">
+                <div className="flex size-9 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
+                  <IndianRupee className="size-4" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase text-rose-600">Total Outstanding</p>
+                  <p className="font-bold text-sm">₹{customer.outstandingAmount.toLocaleString()}</p>
+                </div>
+              </div>
+            )}
+            <div className="pt-2 border-t border-dashed">
+              <p className="text-[10px] font-bold uppercase text-muted-foreground mb-2">19kg Cylinders Purchased</p>
+              <div className="flex items-center bg-muted/30 px-3 py-2 rounded-lg text-sm font-bold">
+                <span className="text-primary">{totalCylindersBought} units</span>
+              </div>
+            </div>
             {customer.notes && (
               <div className="rounded-xl bg-muted/50 p-3 text-xs italic text-muted-foreground border border-dashed">
                 &ldquo;{customer.notes}&rdquo;
@@ -166,7 +185,7 @@ export default function CustomerDetailsPage() {
           )}>
             <CardContent className="p-6 relative">
               <IndianRupee className={cn("size-4 mb-2", balance > 0 ? "text-rose-500" : "text-emerald-100")} />
-              <p className={cn("text-[10px] font-bold uppercase tracking-wider", balance > 0 ? "text-rose-600" : "text-emerald-100")}>Current Balance</p>
+              <p className={cn("text-[10px] font-bold uppercase tracking-wider", balance > 0 ? "text-rose-600" : "text-emerald-100")}>Total Outstanding</p>
               <p className="text-2xl font-black tracking-tight">₹{balance.toLocaleString()}</p>
               {balance > 0 && (
                 <div className="absolute top-4 right-4 animate-pulse">
@@ -196,14 +215,14 @@ export default function CustomerDetailsPage() {
                 {deliveries.length === 0 ? (
                   <div className="p-20 text-center text-muted-foreground">No purchase history found.</div>
                 ) : (
-                                      deliveries.map((d: { _id: string; cylinderType: string; deliveryDate: string; quantity: number; pricePerCylinder: number }) => (
+                                      deliveries.map((d: { _id: string; deliveryDate: string; quantity: number; pricePerCylinder: number }) => (
                     <div key={d._id} className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-muted/30 transition-colors">
                       <div className="flex items-center gap-4">
                         <div className="size-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
                           <Package className="size-4" />
                         </div>
                         <div>
-                          <p className="text-sm font-bold">{d.cylinderType}</p>
+                          <p className="text-sm font-bold">19kg Cylinder</p>
                           <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
                             <span className="flex items-center"><Calendar className="size-3 mr-1" /> {format(new Date(d.deliveryDate), "dd MMM yyyy")}</span>
                             <span>Qty: {d.quantity}</span>

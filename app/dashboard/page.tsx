@@ -14,7 +14,8 @@ import {
   ArrowDownRight,
   Plus,
   ShoppingCart,
-  Wallet
+  Wallet,
+  AlertCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -30,10 +31,10 @@ export default function DashboardPage() {
 
   const stats = [
     { label: "Total Customers", value: summary?.totalCustomers ?? 0, icon: Users, color: "bg-blue-500", trend: "+2.5%" },
-    { label: "Monthly Sales", value: `₹${profit?.monthlyProfit ?? 0}`, icon: TrendingUp, color: "bg-indigo-500", trend: "+12%" },
+    { label: "Monthly Profit", value: `₹${profit?.monthlyProfit ?? 0}`, icon: TrendingUp, color: "bg-indigo-500", trend: "+12%" },
     { label: "Monthly Collected", value: `₹${profit?.monthlyCollection ?? 0}`, icon: Wallet, color: "bg-emerald-500", trend: "+15%" },
-    { label: "Today's Deliveries", value: summary?.deliveriesToday ?? 0, icon: Truck, color: "bg-amber-500", trend: "+8%" },
-    { label: "Stock in Hand", value: summary?.cylindersInStock ?? 0, icon: Package, color: "bg-rose-500", trend: "-4%" },
+    { label: "Total Outstanding", value: `₹${profit?.totalOutstanding ?? 0}`, icon: AlertCircle, color: "bg-rose-500", trend: "+8%" },
+    { label: "Stock in Hand", value: summary?.cylindersInStock ?? 0, icon: Package, color: "bg-amber-500", trend: "-4%" },
   ];
 
   const weeklyData = [
@@ -167,7 +168,7 @@ export default function DashboardPage() {
                   <IndianRupee className="size-5" />
                 </div>
                 <div className="text-left">
-                  <p className="text-sm font-bold">Record Payment</p>
+                  <p className="text-sm font-bold">Record Collection</p>
                   <p className="text-[10px] text-muted-foreground uppercase font-medium">Inbound Cash</p>
                 </div>
               </Button>

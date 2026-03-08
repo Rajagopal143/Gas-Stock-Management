@@ -15,7 +15,8 @@ export default function NewCustomerPage() {
   const router = useRouter();
   const { register, handleSubmit, formState: { isSubmitting } } = useForm();
 
-  const submit = handleSubmit(async (values) => {
+    const submit = handleSubmit(async (values) => {
+      console.log(values);
     try {
       const res = await fetch("/api/customers", { 
         method: "POST", 
@@ -80,10 +81,24 @@ export default function NewCustomerPage() {
                 <Label htmlFor="area">Area / Locality</Label>
                 <Input id="area" placeholder="Downtown" {...register("area")} className="bg-background/50" />
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="notes">Reference / Notes</Label>
-                <Input id="notes" placeholder="Referred by..." {...register("notes")} className="bg-background/50" />
-              </div>
+                          <div className="grid gap-2">
+                              <Label htmlFor="outstandingAmount">Opening Outstanding (Optional)</Label>
+                              <div className="relative">
+                                  <span className="absolute left-3 top-2.5 text-muted-foreground text-sm font-bold">₹</span>
+                                  <Input
+                                      id="outstandingAmount"
+                                      type="number"
+                                      placeholder="0"
+                                      {...register("outstandingAmount", { valueAsNumber: true })}
+                                      className="pl-7 bg-background/50"
+                                  />                              </div>
+                              <p className="text-[10px] text-muted-foreground italic">Opening debt outstanding if any.</p>
+                          </div>
+                      </div>
+
+                      <div className="grid gap-2">
+                          <Label htmlFor="notes">Reference / Notes</Label>
+                          <Input id="notes" placeholder="Referred by..." {...register("notes")} className="bg-background/50" />
             </div>
 
             <div className="flex justify-end gap-3 pt-4">

@@ -3,18 +3,23 @@ import { connectDB } from "@/lib/mongodb";
 import Delivery from "@/models/Delivery";
 import PurchaseOrder from "@/models/PurchaseOrder";
 import Collection from "@/models/Collection";
+import Customer from "@/models/Customer";
 
 export async function GET() {
   await connectDB();
-  const [deliveries, purchases, collections] = await Promise.all([
+  const [deliveries, purchases, collections, customers] = await Promise.all([
     Delivery.find({}),
     PurchaseOrder.find({}),
-    Collection.find({})
+    Collection.find({}),
+    Customer.find({})
   ]);
 
-  const totalRevenue = deliveries.reduce((s, d) => s + d.quantity * d.pricePerCylinder, 0);
+  const totalRevenue = deliveries.reduce((s, d) => s + d.quantity * (d.pricePerCylinder - (d.discountPerCylinder || 0)), 0);
   const totalExpense = purchases.reduce((s, p) => s + p.totalCost, 0);
   const totalCollected = collections.reduce((s, c) => s + c.amount, 0);
+
+  // Total Outstanding = Sum of Live Outstanding fields from all customers
+  const totalOutstanding = customers.reduce((s, c) => s + (c.outstandingAmount || 0), 0);
 
   const now = new Date();
   const day = new Date(now); day.setHours(0,0,0,0);
@@ -25,7 +30,7 @@ export async function GET() {
   const calculateProfit = (start: Date) => {
     const rev = deliveries
       .filter((d) => new Date(d.deliveryDate) >= start)
-      .reduce((s, d) => s + d.quantity * d.pricePerCylinder, 0);
+      .reduce((s, d) => s + d.quantity * (d.pricePerCylinder - (d.discountPerCylinder || 0)), 0);
     const exp = purchases
       .filter((p) => new Date(p.purchaseDate || p.createdAt) >= start)
       .reduce((s, p) => s + p.totalCost, 0);
@@ -51,6 +56,7 @@ export async function GET() {
 
     totalRevenue,
     totalExpense,
-    totalCollected
+    totalCollected,
+    totalOutstanding
   });
 }

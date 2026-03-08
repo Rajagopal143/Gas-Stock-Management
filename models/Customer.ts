@@ -7,6 +7,7 @@ const customerSchema = new Schema(
     shopName: String,
     address: String,
     area: String,
+    outstandingAmount: { type: Number, default: 0 },
     notes: String
   },
   { timestamps: true }

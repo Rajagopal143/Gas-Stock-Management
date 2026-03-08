@@ -5,7 +5,7 @@ import { inventorySchema } from "@/lib/validators";
 
 export async function GET() {
   await connectDB();
-  const items = await Inventory.find({}).sort({ cylinderType: 1 });
+  const items = await Inventory.find({});
   return NextResponse.json(items);
 }
 
@@ -14,7 +14,7 @@ export async function POST(req: Request) {
   const parsed = inventorySchema.safeParse(await req.json());
   if (!parsed.success) return NextResponse.json(parsed.error.flatten(), { status: 400 });
   const item = await Inventory.findOneAndUpdate(
-    { cylinderType: parsed.data.cylinderType },
+    {},
     parsed.data,
     { upsert: true, new: true }
   );

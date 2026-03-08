@@ -1,11 +1,10 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Truck, Calendar, User, Package, IndianRupee, Clock, CheckCircle2, ChevronRight } from "lucide-react";
+import { Truck, Calendar, Package, IndianRupee, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 
 export default function DeliveriesPage() {
@@ -59,24 +58,21 @@ export default function DeliveriesPage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <h4 className="font-bold text-foreground truncate">{d.customerId?.name}</h4>
-                        <Badge variant={d.status === "Delivered" ? "secondary" : "outline"} className="text-[10px] font-bold uppercase py-0 px-2 h-5">
-                          {d.status === "Delivered" ? <CheckCircle2 className="mr-1 size-3" /> : <Clock className="mr-1 size-3" />}
-                          {d.status}
-                        </Badge>
                       </div>
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-xs text-muted-foreground">
-                        <span className="flex items-center"><Package className="mr-1 size-3" /> {d.cylinderType} × {d.quantity}</span>
+                        <span className="flex items-center"><Package className="mr-1 size-3" /> {d.quantity} × 19kg cylinders</span>
                         <span className="flex items-center font-semibold text-primary/80"><IndianRupee className="mr-1 size-3" />₹{d.quantity * d.pricePerCylinder}</span>
                         <span className="flex items-center"><Calendar className="mr-1 size-3" /> {format(new Date(d.createdAt), "dd MMM yyyy, p")}</span>
                       </div>
                     </div>
                   </div>
                   
-                  <div className="flex items-center justify-between md:justify-end gap-4 border-t pt-4 md:border-none md:pt-0">
+                  <div className="flex items-center justify-between md:justify-end gap-3 border-t pt-4 md:border-none md:pt-0">
                     <div className="flex flex-col text-right">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Total Amount</p>
-                      <p className="text-lg font-black tracking-tight">₹{d.quantity * d.pricePerCylinder}</p>
+                      <p className="text-lg font-black tracking-tight text-primary">₹{(d.quantity * (d.pricePerCylinder - (d.discountPerCylinder || 0))).toLocaleString()}</p>
                     </div>
+
                     <Button variant="ghost" size="icon" className="group-hover:translate-x-1 transition-transform">
                       <ChevronRight className="size-4" />
                     </Button>

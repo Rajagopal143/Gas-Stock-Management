@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, PackagePlus, Save } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { NativeSelect } from "@/components/ui/native-select";
 import { toast } from "sonner";
 
 export default function NewInventoryPage() {
@@ -57,22 +56,12 @@ export default function NewInventoryPage() {
             <PackagePlus className="size-5 text-primary" />
             Stock Details
           </CardTitle>
-          <CardDescription>Enter the cylinder type and stock quantities.</CardDescription>
+          <CardDescription>Update 19kg cylinder stock quantities.</CardDescription>
         </CardHeader>
         <CardContent>
           <form className="grid gap-6" onSubmit={submit}>
             <div className="grid gap-2">
-              <Label htmlFor="type">Cylinder Type</Label>
-              <NativeSelect id="type" {...register("cylinderType", { required: true })} className="bg-background/50">
-                <option value="14.2kg Domestic">14.2kg Domestic</option>
-                <option value="19kg Commercial">19kg Commercial</option>
-                <option value="5kg Mini">5kg Mini</option>
-                <option value="47.5kg Industrial">47.5kg Industrial</option>
-              </NativeSelect>
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="quantity">Quantity (Cylinders)</Label>
+              <Label htmlFor="quantity">Quantity (19kg Cylinders)</Label>
               <Input id="quantity" type="number" placeholder="0" {...register("quantity", { required: true })} className="bg-background/50" />
             </div>
 

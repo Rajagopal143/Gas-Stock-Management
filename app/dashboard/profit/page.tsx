@@ -141,7 +141,7 @@ export default function ProfitPage() {
 
               <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50/50 border border-slate-200 transition-colors hover:bg-slate-50">
                 <div className="space-y-0.5">
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Pending Balance</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Pending Outstanding</p>
                   <p className="text-lg font-black text-slate-700">₹{((data?.totalRevenue ?? 0) - (data?.totalCollected ?? 0)).toLocaleString()}</p>
                 </div>
                 <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-100 font-bold">Outstanding</Badge>

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import Delivery from "@/models/Delivery";
+import Customer from "@/models/Customer";
 import Inventory from "@/models/Inventory";
 import { deliverySchema } from "@/lib/validators";
 
@@ -16,17 +17,28 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  await connectDB();
-  const parsed = deliverySchema.safeParse(await req.json());
-  if (!parsed.success) return NextResponse.json(parsed.error.flatten(), { status: 400 });
-  const payload = parsed.data;
+  try {
+    
+    await connectDB();
+    const parsed = deliverySchema.safeParse(await req.json());
+    if (!parsed.success) return NextResponse.json(parsed.error.flatten(), { status: 400 });
+    const payload = parsed.data;
 
-  const inventory = await Inventory.findOne({ cylinderType: payload.cylinderType });
-  if (!inventory || inventory.quantity < payload.quantity) {
-    return NextResponse.json({ message: "Insufficient stock" }, { status: 400 });
+    const inventory = await Inventory.findOne({});
+    if (!inventory || inventory.quantity < payload.quantity) {
+      return NextResponse.json({ message: "Insufficient stock" }, { status: 400 });
+    }
+
+    const record = await Delivery.create({ ...payload, deliveryDate: payload.deliveryDate || new Date() });
+    await Inventory.findOneAndUpdate({}, { $inc: { quantity: -payload.quantity } });
+
+    await Customer.findByIdAndUpdate(payload.customerId, {
+      $inc: { outstandingAmount: inventory?.sellingPrice * payload.quantity }
+    });
+  
+    return NextResponse.json(record, { status: 201 });
+  } catch (error) {
+    console.error("Error processing delivery:", error);
+    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
   }
-
-  const record = await Delivery.create({ ...payload, deliveryDate: payload.deliveryDate || new Date() });
-  await Inventory.findOneAndUpdate({ cylinderType: payload.cylinderType }, { $inc: { quantity: -payload.quantity } });
-  return NextResponse.json(record, { status: 201 });
 }

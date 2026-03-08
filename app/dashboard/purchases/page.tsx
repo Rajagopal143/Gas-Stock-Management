@@ -52,7 +52,7 @@ export default function PurchasesPage() {
                     <div>
                       <h4 className="font-bold text-foreground truncate">{p.supplier}</h4>
                       <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                        <span className="flex items-center"><Package className="mr-1 size-3" /> {p.cylinderType} × {p.quantity}</span>
+                        <span className="flex items-center"><Package className="mr-1 size-3" /> {p.quantity} × 19kg cylinders</span>
                         <span className="flex items-center"><Calendar className="mr-1 size-3" /> {p.date ? format(new Date(p.date), "dd MMM yyyy") : "N/A"}</span>
                       </div>
                     </div>
